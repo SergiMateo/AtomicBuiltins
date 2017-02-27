@@ -1,0 +1,15 @@
+This repo contains 3 different examples testing different implementations of a '#pragma omp atomic' for floats
+
+1. parallel_with_atomic.c
+    we rely on the transformation of the compiler.
+
+2. parallel_with_builtin_01.c
+    the atomic operation is implemented using the
+    '__sync_bool_compare_and_swap_4' intrinsic + an extra memory fence per
+    iteration. Note that is not clear whether the atomic builtin implies a
+    memory fence:
+
+    https://gcc.gnu.org/onlinedocs/gcc-6.3.0/gcc/_005f_005fsync-Builtins.html#_005f_005fsync-Builtins
+
+3. parallel_with_builtin_02.c
+    Similar to the previous test but removing the memory fence (__sync_synchronize).
