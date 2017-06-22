@@ -1,40 +1,35 @@
 GCC=gcc
-MCC=mcc
-CFLAGS=-std=c99 -fopenmp
+CFLAGS=-std=c99 -fopenmp -O3
 
 all: gcc_parallel_with_atomic \
-     gcc_parallel_with_builtin_01 \
-     gcc_parallel_with_builtin_02 \
-     mcc_parallel_with_atomic \
-     mcc_parallel_with_builtin_01 \
-     mcc_parallel_with_builtin_02
+     gcc_parallel_with_builtin_with_extra_mem_fence \
+     gcc_parallel_with_builtin_with_volatile \
+     gcc_parallel_with_builtin
 
-gcc_parallel_with_atomic: parallel_with_atomic.c
-	$(GCC) -o $@ $(CFLAGS) $?
+gcc_parallel_with_atomic: *.c
+	$(GCC) -DVERSION=1 -o $@ $(CFLAGS) $?
 
-mcc_parallel_with_atomic: parallel_with_atomic.c
-	$(MCC) -o $@ $(CFLAGS) $?
+gcc_parallel_with_builtin_with_extra_mem_fence: *.c
+	$(GCC) -DVERSION=2 -o $@ $(CFLAGS) $?
 
-gcc_parallel_with_builtin_01: parallel_with_builtin_01.c
-	$(GCC) -o $@ $(CFLAGS) $?
+gcc_parallel_with_builtin_with_volatile: *.c
+	$(GCC) -DVERSION=3 -o $@ $(CFLAGS) $?
 
-mcc_parallel_with_builtin_01: parallel_with_builtin_01.c
-	$(MCC) -o $@ $(CFLAGS) $?
-
-gcc_parallel_with_builtin_02: parallel_with_builtin_02.c
-	$(GCC) -o $@ $(CFLAGS) $?
-
-mcc_parallel_with_builtin_02: parallel_with_builtin_02.c
-	$(MCC) -o $@ $(CFLAGS) $?
+gcc_parallel_with_builtin: *.c
+	$(GCC) -DVERSION=4 -o $@ $(CFLAGS) $?
 
 run:
+	echo "-----------------------------------------------------------------"
 	OMP_NUM_THREADS=1 ./gcc_parallel_with_atomic
-	OMP_NUM_THREADS=1 ./mcc_parallel_with_atomic
-	OMP_NUM_THREADS=1 ./gcc_parallel_with_builtin_01
-	OMP_NUM_THREADS=1 ./mcc_parallel_with_builtin_01
-	OMP_NUM_THREADS=1 ./gcc_parallel_with_builtin_02
-	OMP_NUM_THREADS=1 ./mcc_parallel_with_builtin_02
+	OMP_NUM_THREADS=1 ./gcc_parallel_with_builtin_with_extra_mem_fence
+	OMP_NUM_THREADS=1 ./gcc_parallel_with_builtin_with_volatile
+	OMP_NUM_THREADS=1 ./gcc_parallel_with_builtin
+	echo "-----------------------------------------------------------------"
+	./gcc_parallel_with_atomic
+	./gcc_parallel_with_builtin_with_extra_mem_fence
+	./gcc_parallel_with_builtin_with_volatile
+	./gcc_parallel_with_builtin
+	echo "-----------------------------------------------------------------"
 
 clean:
-	rm *.o gcc_parallel_with_atomic gcc_parallel_with_builtin_0[1,2] \
-	       mcc_parallel_with_atomic mcc_parallel_with_builtin_0[1,2] -if
+	rm -f *.o gcc_parallel*
